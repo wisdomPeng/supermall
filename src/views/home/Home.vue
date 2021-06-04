@@ -3,18 +3,19 @@
     <!-- 顶部导航栏 -->
     <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
 
+    <tab-control class="tab-control" :titles="['流行','新款','精选']" @tabClick="tabClick" ref="tabControl1" v-show="isTbaFixed"/>
     <scroll class="content" ref="scroll" :probe-type="3"
             @scroll="contentScroll" :pull-up-load="true"
             @pullingUp="loadMore">
       <!-- 轮播图 -->
-      <home-swiper :banners="banners"></home-swiper>
+      <home-swiper :banners="banners" @swiperImageLoad="swiperImageLoad"></home-swiper>
       <!-- 推荐模块 -->
       <recommend-view :recommends="recommends"></recommend-view>
       <!-- 本周流行模块 -->
       <feature-view></feature-view>
       <!-- 列表展示模块 -->
       <!--@tabClick是TabControl.vue里面组件传出的，加了@是对它进项绑定-->
-      <tab-control :titles="['流行','新款','精选']" class="tab-control" @tabClick="tabClick"></tab-control>
+      <tab-control :titles="['流行','新款','精选']" @tabClick="tabClick" ref="tabControl2"></tab-control>
       <!-- 商品展示 -->
       <goods-list :goods="showGoods"></goods-list>
 
@@ -36,8 +37,8 @@ import RecommendView from "./childComps/RecommendView";
 import FeatureView from "./childComps/FeatureView";
 
 import {getHomeMultidata,getHomeGoods} from "network/home";
-
-
+//防抖动方法
+import {debounce} from "common/utils";
 
 
 export default {
@@ -62,13 +63,29 @@ export default {
             'sell': {page: 0, list: []},
           },
           currentType: 'pop',
-          isShowBackTop: false
+          isShowBackTop: false,
+          isTbaFixed: false,
+          saveY: 0
         }
     },
     computed:{
       showGoods(){
         return this.goods[this.currentType].list
       }
+    },
+    // 离开页面，之前的页面会销毁，阻止销毁去App.vue中加上keep-view标签
+    destroyed() {
+      console.log('home destroyed')
+    },
+    // 页面处于活跃时触发
+    activated() {
+      this.$refs.scroll.scrollTo(0,this.saveY,0)
+      // 回来时最好进行一次refresh刷新，不然可能会返回此页面时可以会自动回到顶部
+      this.$refs.scroll.refresh()
+    },
+    // 页面不活跃时触发，即离开时
+    deactivated() {
+      this.saveY = this.$refs.scroll.getScrollY()
     },
     created() {
       // 1.请求多个数据
@@ -79,6 +96,11 @@ export default {
       this.getHomeGoods('new')
       this.getHomeGoods('sell')
 
+    },
+    mounted() {
+      // 获取tabControl的offsetTop
+      // 所以组件都有一个属性$el，用于获取组件中的元素
+      // console.log(this.$refs.tabControl.$el.offsetTop)
     },
     methods: {
         /*
@@ -91,16 +113,22 @@ export default {
             case 1: this.currentType='new';break;
             case 2: this.currentType='sell';break;
           }
+          // 为了使滑动固定的tabControl1和真正的列表展示栏tabControl2的显示一致
+          this.$refs.tabControl1.currentIndex = index
+          this.$refs.tabControl2.currentIndex = index
         },
         // 返回顶部
         backClick(){
           this.$refs.scroll.scrollTo(0, 0)
         },
-        // 返回顶部按钮的显示和影藏
         contentScroll(position){
           // console.log(position)
+          // 1.返回顶部按钮的显示和影藏
           // 因为向下滑动y是负值，所以给它加个负号
           (-position.y) < 1000 ? this.isShowBackTop = false : this.isShowBackTop = true;
+
+          // 2.决定tabControl是否吸顶（position: fixed）
+          this.isTbaFixed = (-position.y) > this.tabOffsetTop
         },
         // 上拉加载
         loadMore(){
@@ -108,7 +136,11 @@ export default {
           // 调用getHomeGoods方法，之前的在created里面调用过，所以page已经是1了，再次调用后page的加1变成2了，这样就加载了第二页的数据进来
           this.getHomeGoods(this.currentType)
         },
-
+        // 监听轮播图片加载完成，并获得tabControl的offsetTop
+        swiperImageLoad(){
+          // console.log(this.$refs.tabControl2.$el.offsetTop)
+          this.tabOffsetTop = this.$refs.tabControl2.$el.offsetTop;
+        },
 
         /*
           网络请求相关代码
@@ -154,11 +186,6 @@ export default {
     background-color: var(--color-tint);
     color: #fff;
   }
-  .tab-control{
-    position: sticky;
-    top: 44px;
-    z-index: 99;
-  }
   .content {
     overflow: hidden;
     position: absolute;
@@ -167,6 +194,12 @@ export default {
     left: 0;
     right: 0;
   }
+
+  .tab-control{
+    position: relative;
+    z-index: 99;
+  }
+
   /*.content{*/
   /*  overflow: hidden;*/
   /*  height: calc(100% - 93px);*/
