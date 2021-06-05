@@ -31,6 +31,7 @@ export default {
     // 1.创建BScroll对象
     this.scroll = new BScroll(this.$refs.wrapper, {
       observeDOM: true,
+      observeImage:true,
       click: true,
       probeType: this.probeType,
       pullUpLoad: this.pullUpLoad
@@ -67,7 +68,7 @@ export default {
     },
     refresh(){
       // console.log('------')
-      this.scroll &&  this.scroll.refresh()
+      this.scroll && this.scroll.refresh()
     }
   }
 }

@@ -5,7 +5,7 @@
     </div>
     <div slot="center" class="title">
       <div v-for="(item,index) in titles" class="title-item"
-           :class="{active: currentIndex == index}" @click="titleClick(index)">{{item}}</div>
+           :class="{active: currentIndex === index}" @click="titleClick(index)">{{item}}</div>
     </div>
   </nav-bar>
 </template>
@@ -29,6 +29,8 @@ export default {
     },
     backClick(){
       this.$router.back()
+      // 也可以使用这种写法
+      // this.$router.go(-1)
     }
   }
 }

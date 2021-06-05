@@ -1,13 +1,15 @@
 <template>
   <div id="detail">
     <detail-nav-bar class="detail-nav"></detail-nav-bar>
-   <scroll class="content">
+    <scroll class="content">
      <detail-swiper :top-images="topImages"></detail-swiper>
      <detail-base-info :goods="goods"></detail-base-info>
      <detail-shop-info :shop="shop"></detail-shop-info>
      <detail-goods-info :detail-info="detailInfo"></detail-goods-info>
      <detail-params-info :paramInfo="paramInfo"></detail-params-info>
-   </scroll>
+      <detail-comment-info :comment-info="commentInfo"></detail-comment-info>
+      <goods-list :goods="recommends"></goods-list>
+    </scroll>
   </div>
 </template>
 
@@ -18,10 +20,12 @@ import DetailBaseInfo from "./childComps/DetailBaseInfo";
 import DetailShopInfo from "./childComps/DetailShopInfo";
 import DetailGoodsInfo from "./childComps/DetailGoodsInfo";
 import DetailParamsInfo from "./childComps/DetailParamsInfo";
+import DetailCommentInfo from "./childComps/DetailCommentInfo";
 
 import Scroll from "components/common/scroll/Scroll";
+import GoodsList from "components/content/goods/GoodsList";
 
-import {getDetail, Goods, Shop, GoodsParam} from "network/detail";
+import {getDetail, Goods, Shop, GoodsParam, getRecommend} from "network/detail";
 
 export default {
   name: "Detail",
@@ -32,7 +36,9 @@ export default {
     DetailShopInfo,
     DetailGoodsInfo,
     DetailParamsInfo,
-    Scroll
+    DetailCommentInfo,
+    Scroll,
+    GoodsList
   },
   data(){
     return{
@@ -41,7 +47,9 @@ export default {
       goods: {},
       shop: {},
       detailInfo: {},
-      paramInfo: {}
+      paramInfo: {},
+      commentInfo: {},
+      recommends: []
     }
   },
   created() {
@@ -66,6 +74,16 @@ export default {
 
       // 5.获取参数信息
       this.paramInfo = new GoodsParam(data.itemParams.info, data.itemParams.rule)
+
+      // 6.取出评论信息
+      if (data.rate.cRate !== 0) {
+        this.commentInfo = data.rate.list[0] || {};
+      }
+    })
+
+    // 3.请求推荐数据
+    getRecommend().then(res => {
+      this.recommends = res.data.list
     })
   }
 }

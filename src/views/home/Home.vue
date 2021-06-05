@@ -79,7 +79,12 @@ export default {
     },
     // 页面处于活跃时触发
     activated() {
-      this.$refs.scroll.scrollTo(0,this.saveY,0)
+      // console.log(this.saveY)
+      // this.$refs.scroll.scrollTo(0,this.saveY,0)
+      // 网上找的，解决回到此页面自动回到顶部的bug
+      setTimeout(() => {
+        this.$refs.scroll.scrollTo(0, this.saveY, 0);
+      }, 0);
       // 回来时最好进行一次refresh刷新，不然可能会返回此页面时可以会自动回到顶部
       this.$refs.scroll.refresh()
     },
