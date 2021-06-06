@@ -2,7 +2,7 @@ module.exports = {
     configureWebpack: {
         resolve: {
             alias: {
-                // 脚手架默认将src路径默认设为了@不用在自己写
+                // 脚手架默认将src路径别名默认设为了@不用在自己写
                 // '@': resolve('src'),
                 'assets': '@/assets',
                 'common': '@/common',

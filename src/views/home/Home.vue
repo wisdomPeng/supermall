@@ -30,7 +30,6 @@ import NavBar from "components/common/navbar/NavBar";
 import TabControl from "components/content/tabControl/TabControl";
 import GoodsList from "components/content/goods/GoodsList";
 import Scroll from "components/common/scroll/Scroll";
-import BackTop from "components/content/backTop/BackTop";
 
 import HomeSwiper from "./childComps/HomeSwiper";
 import RecommendView from "./childComps/RecommendView";
@@ -40,6 +39,8 @@ import {getHomeMultidata,getHomeGoods} from "network/home";
 //防抖动方法
 import {debounce} from "common/utils";
 
+import {backTopMixin} from "common/mixin";
+
 
 export default {
     name: "Home",
@@ -48,11 +49,11 @@ export default {
       TabControl,
       GoodsList,
       Scroll,
-      BackTop,
       HomeSwiper,
       RecommendView,
       FeatureView,
     },
+    mixins: [backTopMixin],
     data(){
         return{
           banners: [],
@@ -63,7 +64,6 @@ export default {
             'sell': {page: 0, list: []},
           },
           currentType: 'pop',
-          isShowBackTop: false,
           isTbaFixed: false,
           saveY: 0
         }
@@ -122,15 +122,14 @@ export default {
           this.$refs.tabControl1.currentIndex = index
           this.$refs.tabControl2.currentIndex = index
         },
-        // 返回顶部
-        backClick(){
-          this.$refs.scroll.scrollTo(0, 0)
-        },
         contentScroll(position){
           // console.log(position)
           // 1.返回顶部按钮的显示和影藏
           // 因为向下滑动y是负值，所以给它加个负号
-          (-position.y) < 1000 ? this.isShowBackTop = false : this.isShowBackTop = true;
+          // (-position.y) < 1000 ? this.isShowBackTop = false : this.isShowBackTop = true;
+
+          // 使用混入的方法
+          this.listenShowBackTop(position)
 
           // 2.决定tabControl是否吸顶（position: fixed）
           this.isTbaFixed = (-position.y) > this.tabOffsetTop
