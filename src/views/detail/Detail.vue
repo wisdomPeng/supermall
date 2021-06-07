@@ -29,7 +29,6 @@ import DetailBottomBar from "./childComps/DetailBottomBar";
 import Scroll from "components/common/scroll/Scroll";
 import GoodsList from "components/content/goods/GoodsList";
 
-
 import {getDetail, Goods, Shop, GoodsParam, getRecommend} from "network/detail";
 import {debounce} from "common/utils";
 
@@ -47,7 +46,7 @@ export default {
     DetailCommentInfo,
     DetailBottomBar,
     Scroll,
-    GoodsList
+    GoodsList,
   },
   mixins: [backTopMixin],
   data(){
@@ -62,7 +61,7 @@ export default {
       recommends: [],
       themeTopYs: [],
       getThemeTopY: null,
-      currentIndex: 0
+      currentIndex: 0,
     }
   },
   created() {
@@ -166,7 +165,11 @@ export default {
       product.iid = this.iid;
 
       // 2.将商品添加到购物车中
-      this.$store.dispatch('addCart',product)
+      this.$store.dispatch('addCart',product).then(res => {
+        // console.log(res);
+        this.$toast.show(res,2000)
+        // console.log(this.$toast)
+      })
     }
   }
 }
